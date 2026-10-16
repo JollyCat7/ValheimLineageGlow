@@ -4,11 +4,12 @@
     <AssemblyName>LineageWeaponGlow</AssemblyName>
     <OutputType>Library</OutputType>
     <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.2" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.BaseLib" Version="5.4.21" />
     <PackageReference Include="BepInEx.Core" Version="5.4.21" />
-    <PackageReference Include="JotunnLib" Version="2.20.0" />
+    <PackageReference Include="UnityEngine.Modules" Version="2022.3.17" />
   </ItemGroup>
 </Project>
