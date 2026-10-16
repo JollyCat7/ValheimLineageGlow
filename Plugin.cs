@@ -1,61 +1,30 @@
-using BepInEx;
-using HarmonyLib;
-using UnityEngine;
+name: Build Plugin DLL
 
-namespace LineageGlowMod
-{
-    [BepInPlugin("com.yourname.lineageglow", "Lineage 2 Style Weapon Glow", "1.0.0")]
-    public class LineageGlowPlugin : BaseUnityPlugin
-    {
-        private readonly Harmony harmony = new Harmony("com.yourname.lineageglow");
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
 
-        void Awake()
-        {
-            harmony.PatchAll();
-        }
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-        [HarmonyPatch(typeof(VisEquipment), "AttachItem")]
-        public static class VisEquipment_AttachItem_Patch
-        {
-            static void Postfix(GameObject __result, int itemDataQuality)
-            {
-                if (__result == null) return;
+    steps:
+    - uses: actions/checkout@v4
 
-                Color glowColor;
-                float intensity;
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '6.0.x'
 
-                if (itemDataQuality <= 15)
-                {
-                    float progress = Mathf.Clamp01((float)itemDataQuality / 15f);
-                    glowColor = Color.Lerp(new Color(0.1f, 0.3f, 1f), new Color(0f, 0.5f, 1f), progress);
-                    intensity = 1.0f + (progress * 3.5f);
-                }
-                else
-                {
-                    glowColor = new Color(1f, 0.1f, 0.1f);
-                    intensity = 5.0f + ((itemDataQuality - 15) * 0.5f);
-                }
+    - name: Add BepInEx NuGet Feed
+      run: dotnet nuget add source https://nuget.bepinex.dev/v3/index.json -n BepInEx
 
-                Renderer[] renderers = __result.GetComponentsInChildren<Renderer>();
-                foreach (var renderer in renderers)
-                {
-                    foreach (var mat in renderer.materials)
-                    {
-                        if (mat.HasProperty("_EmissionColor"))
-                        {
-                            mat.EnableKeyword("_EMISSION");
-                            mat.SetColor("_EmissionColor", glowColor * intensity);
-                        }
-                    }
-                }
+    - name: Build Project
+      run: dotnet build --configuration Release --no-incremental
 
-                Light[] lights = __result.GetComponentsInChildren<Light>();
-                foreach (var light in lights)
-                {
-                    light.color = glowColor;
-                    light.intensity = intensity;
-                }
-            }
-        }
-    }
-}
+    - name: Upload DLL Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: LineageWeaponGlow-DLL
+        path: bin/Release/net462/LineageWeaponGlow.dll
