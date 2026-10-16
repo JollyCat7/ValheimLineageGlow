@@ -17,6 +17,9 @@ jobs:
       with:
         dotnet-version: '6.0.x'
 
+    - name: Add BepInEx NuGet Feed
+      run: dotnet nuget add source https://nuget.bepinex.dev/v3/index.json -n BepInEx
+
     - name: Build Project
       run: dotnet build --configuration Release
 
